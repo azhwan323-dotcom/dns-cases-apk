@@ -13,46 +13,121 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Initialize Capacitor & Add Android
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create Android WebView App
         run: |
-          mkdir -p www
-          if [ ! -f www/index.html ] && [ -f index.html ]; then
-            cp index.html www/index.html
+          mkdir -p app/src/main/java/com/dnscases/app
+          mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/assets
+
+          if [ -f www/index.html ]; then
+            cp www/index.html app/src/main/assets/index.html
+          elif [ -f index.html ]; then
+            cp index.html app/src/main/assets/index.html
+          else
+            echo "<h1>DNS CASES</h1>" > app/src/main/assets/index.html
           fi
-          npm init -y
-          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          npx cap init "DNS CASES" "com.dnscases.app" --web-dir=www
-          npx cap add android
-          cat << 'EOF' >> android/app/build.gradle
 
-configurations.all {
-    resolutionStrategy {
-        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-    }
-}
-EOF
+          cat << 'EOF' > settings.gradle
+          rootProject.name = "DNS CASES"
+          include ':app'
+          EOF
 
-      - name: Build Debug APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          cat << 'EOF' > build.gradle
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.2.2'
+              }
+          }
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dns-cases-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.dnscases.app'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.dnscases.app"
+                  minSdk 23
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application
+                  android:label="DNS CASES"
+                  android:usesCleartextTraffic="true"
+                  android:theme="@style/Theme.AppCompat.NoActionBar">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <WebView xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/webview"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/strings.xml
+          <resources>
+              <string name="app_name">DNS CASES</string>
+          </resources>
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/dnscases/app/MainActivity.java
+          package com.dnscases.app;
+
+          import android.os.Bundle;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import androidx.appcompat.app.AppCompatActivity;
+
+          public class MainActivity extends AppCompatActivity {
+              @Override
+              protected void onCreate(Bundle savedInstance
+              
