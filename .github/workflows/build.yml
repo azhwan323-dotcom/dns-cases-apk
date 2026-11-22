@@ -21,17 +21,310 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Create project
+      - name: Create project and default icon
         run: |
-          mkdir -p app/src/main/java/com/dnscases/app app/src/main/res/layout app/src/main/res/values app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/java/com/dnscases/app app/src/main/res/layout app/src/main/res/values app/src/main/res/mipmap-mdpi app/src/main/res/mipmap-hdpi app/src/main/res/mipmap-xhdpi app/src/main/res/mipmap-xxhdpi app/src/main/res/mipmap-xxxhdpi
+
+          python3 -c 'import struct, zlib; w=h=128; raw=bytearray(); [ (raw.append(0), [ raw.extend((0,240,255,255) if ((x-64)**2+(y-64)**2)**0.5 < 42 else ((255,42,133,255) if ((x-64)**2+(y-64)**2)**0.5 < 56 else (7,11,20,255))) for x in range(w) ]) for y in range(h) ]; ch=lambda t,d: struct.pack("!I",len(d))+t+d+struct.pack("!I",zlib.crc32(t+d)&0xffffffff); png=b"\x89PNG\r\n\x1a\n"+ch(b"IHDR",struct.pack("!IIBBBBB",w,h,8,6,0,0,0))+ch(b"IDAT",zlib.compress(bytes(raw)))+ch(b"IEND",b""); [ open(f"app/src/main/res/{d}/{n}","wb").write(png) for d in ["mipmap-mdpi","mipmap-hdpi","mipmap-xhdpi","mipmap-xxhdpi","mipmap-xxxhdpi"] for n in ["ic_launcher.png","ic_launcher_round.png"] ]'
+
           printf 'rootProject.name = "DNS CASES"\ninclude ":app"\n' > settings.gradle
           printf 'buildscript {\n repositories { google(); mavenCentral() }\n dependencies { classpath "com.android.tools.build:gradle:8.5.2" }\n}\nallprojects { repositories { google(); mavenCentral() } }\n' > build.gradle
           printf 'org.gradle.jvmargs=-Xmx2048m\nandroid.useAndroidX=true\n' > gradle.properties
-          printf 'plugins { id "com.android.application" }\nandroid {\n namespace "com.dnscases.app"\n compileSdk 34\n defaultConfig {\n  applicationId "com.dnscases.app"\n  minSdk 23\n  targetSdk 34\n  versionCode 10\n  versionName "2.3"\n }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n' > app/build.gradle
+          printf 'plugins { id "com.android.application" }\nandroid {\n namespace "com.dnscases.app"\n compileSdk 34\n defaultConfig {\n  applicationId "com.dnscases.app"\n  minSdk 23\n  targetSdk 34\n  versionCode 11\n  versionName "2.4"\n }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n}\n' > app/build.gradle
           printf '<resources><string name="app_name">DNS CASES</string></resources>\n' > app/src/main/res/values/strings.xml
-          printf '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:label="DNS CASES" android:theme="@android:style/Theme.DeviceDefault.NoActionBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>\n' > app/src/main/AndroidManifest.xml
-          printf '<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#070B14" android:gravity="center" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DNS CASES READY" android:textColor="#00F0FF" android:textSize="24sp"/></LinearLayout>\n' > app/src/main/res/layout/activity_main.xml
-          printf 'package com.dnscases.app; import android.app.Activity; import android.os.Bundle; public class MainActivity extends Activity { @Override protected void onCreate(Bundle b) { super.onCreate(b); setContentView(R.layout.activity_main); } }\n' > app/src/main/java/com/dnscases/app/MainActivity.java
+
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <application
+                  android:label="DNS CASES"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher_round"
+                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+                  <activity android:name=".MainActivity" android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+                  <service android:name=".DnsVpnService" android:permission="android.permission.BIND_VPN_SERVICE" android:exported="false">
+                      <intent-filter><action android:name="android.net.VpnService" /></intent-filter>
+                  </service>
+              </application>
+          </manifest>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#070B14"
+              android:gravity="center"
+              android:orientation="vertical"
+              android:padding="24dp">
+              <ImageView android:id="@+id/logoView" android:layout_width="84dp" android:layout_height="84dp" android:src="@mipmap/ic_launcher" />
+              <TextView android:id="@+id/titleText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="DNS CASES" android:textColor="#00F0FF" android:textSize="26sp" android:textStyle="bold" />
+              <TextView android:id="@+id/statusText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Status: Disconnected" android:textColor="#94A3B8" android:textSize="14sp" />
+              <EditText android:id="@+id/dns1Input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:background="#111827" android:padding="13dp" android:text="87.107.206.16" android:textColor="#FFFFFF" />
+              <EditText android:id="@+id/dns2Input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="#111827" android:padding="13dp" android:text="87.107.206.15" android:textColor="#FFFFFF" />
+              <Button android:id="@+id/toggleBtn" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="18dp" android:backgroundTint="#00C896" android:text="CONNECT DNS VPN" android:textColor="#041016" android:textStyle="bold" />
+              <Button android:id="@+id/pubgBtn" android:layout_width="match_parent" android:layout_height="50dp" android:layout_marginTop="10dp" android:backgroundTint="#FF2A85" android:text="OPEN PUBG MOBILE" android:textColor="#FFFFFF" android:textStyle="bold" />
+              <Button android:id="@+id/settingsBtn" android:layout_width="match_parent" android:layout_height="46dp" android:layout_marginTop="10dp" android:backgroundTint="#1E293B" android:text="SETTINGS" android:textColor="#00F0FF" android:textStyle="bold" />
+          </LinearLayout>
+          EOF
+
+          cat << 'EOF' > app/src/main/res/layout/dialog_settings.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="#0F172A"
+              android:orientation="vertical"
+              android:padding="20dp">
+              <TextView android:id="@+id/settingsHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SETTINGS" android:textColor="#00F0FF" android:textSize="19sp" android:textStyle="bold" />
+              <RadioGroup android:id="@+id/langGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+                  <RadioButton android:id="@+id/langEn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="English" android:textColor="#FFFFFF" />
+                  <RadioButton android:id="@+id/langFa" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="فارسی" android:textColor="#FFFFFF" />
+              </RadioGroup>
+              <CheckBox android:id="@+id/autoConnectStartupCheck" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Auto connect on app open" android:textColor="#FFFFFF" />
+              <CheckBox android:id="@+id/autoConnectPubgCheck" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Auto connect before opening PUBG" android:textColor="#FFFFFF" />
+              <Button android:id="@+id/resetDnsBtn" android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="14dp" android:backgroundTint="#334155" android:text="RESET DNS (87.107.206.16 / 15)" android:textColor="#FFFFFF" />
+              <Button android:id="@+id/saveSettingsBtn" android:layout_width="match_parent" android:layout_height="46dp" android:layout_marginTop="8dp" android:backgroundTint="#00C896" android:text="SAVE SETTINGS" android:textColor="#041016" android:textStyle="bold" />
+          </LinearLayout>
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/dnscases/app/DnsVpnService.java
+          package com.dnscases.app;
+
+          import android.content.Intent;
+          import android.net.VpnService;
+          import android.os.ParcelFileDescriptor;
+          import java.io.IOException;
+
+          public class DnsVpnService extends VpnService {
+              public static final String ACTION_START = "com.dnscases.app.START_VPN";
+              public static final String ACTION_STOP = "com.dnscases.app.STOP_VPN";
+              public static boolean isRunning = false;
+              private ParcelFileDescriptor vpnInterface;
+
+              @Override
+              public int onStartCommand(Intent intent, int flags, int startId) {
+                  if (intent != null && ACTION_STOP.equals(intent.getAction())) {
+                      stopVpn();
+                      return START_NOT_STICKY;
+                  }
+                  String d1 = (intent != null && intent.getStringExtra("dns1") != null) ? intent.getStringExtra("dns1").trim() : "87.107.206.16";
+                  String d2 = (intent != null && intent.getStringExtra("dns2") != null) ? intent.getStringExtra("dns2").trim() : "87.107.206.15";
+                  startVpn(d1, d2);
+                  return START_STICKY;
+              }
+
+              private void startVpn(String d1, String d2) {
+                  stopVpn();
+                  try {
+                      Builder b = new Builder();
+                      b.setSession("DNS CASES");
+                      b.addAddress("10.10.10.2", 32);
+                      if (!d1.isEmpty()) b.addDnsServer(d1);
+                      if (!d2.isEmpty()) b.addDnsServer(d2);
+                      vpnInterface = b.establish();
+                      isRunning = (vpnInterface != null);
+                  } catch (Exception e) {
+                      isRunning = false;
+                  }
+              }
+
+              private void stopVpn() {
+                  isRunning = false;
+                  if (vpnInterface != null) {
+                      try { vpnInterface.close(); } catch (IOException ignored) {}
+                      vpnInterface = null;
+                  }
+              }
+
+              @Override
+              public void onDestroy() {
+                  stopVpn();
+                  super.onDestroy();
+              }
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/dnscases/app/MainActivity.java
+          package com.dnscases.app;
+
+          import android.app.Activity;
+          import android.app.AlertDialog;
+          import android.content.Intent;
+          import android.content.SharedPreferences;
+          import android.net.VpnService;
+          import android.os.Bundle;
+          import android.view.LayoutInflater;
+          import android.view.View;
+          import android.widget.Button;
+          import android.widget.CheckBox;
+          import android.widget.EditText;
+          import android.widget.RadioButton;
+          import android.widget.TextView;
+          import android.widget.Toast;
+
+          public class MainActivity extends Activity {
+              private SharedPreferences prefs;
+              private EditText dns1Input, dns2Input;
+              private Button toggleBtn, pubgBtn, settingsBtn;
+              private TextView statusText, titleText;
+              private boolean openPubgAfterConnect = false;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
+                  prefs = getSharedPreferences("dns_cases_prefs", MODE_PRIVATE);
+
+                  titleText = findViewById(R.id.titleText);
+                  statusText = findViewById(R.id.statusText);
+                  dns1Input = findViewById(R.id.dns1Input);
+                  dns2Input = findViewById(R.id.dns2Input);
+                  toggleBtn = findViewById(R.id.toggleBtn);
+                  pubgBtn = findViewById(R.id.pubgBtn);
+                  settingsBtn = findViewById(R.id.settingsBtn);
+
+                  dns1Input.setText(prefs.getString("dns1", "87.107.206.16"));
+                  dns2Input.setText(prefs.getString("dns2", "87.107.206.15"));
+                  refreshUi();
+
+                  toggleBtn.setOnClickListener(v -> {
+                      if (DnsVpnService.isRunning) stopVpn();
+                      else startOrPrepareVpn(101);
+                  });
+
+                  pubgBtn.setOnClickListener(v -> {
+                      if (prefs.getBoolean("auto_pubg", false) && !DnsVpnService.isRunning) {
+                          openPubgAfterConnect = true;
+                          startOrPrepareVpn(102);
+                      } else {
+                          launchPubg();
+                      }
+                  });
+
+                  settingsBtn.setOnClickListener(v -> showSettings());
+
+                  if (prefs.getBoolean("auto_startup", false) && !DnsVpnService.isRunning && VpnService.prepare(this) == null) {
+                      startVpnNow();
+                  }
+              }
+
+              private void startOrPrepareVpn(int code) {
+                  Intent prep = VpnService.prepare(this);
+                  if (prep != null) startActivityForResult(prep, code);
+                  else {
+                      startVpnNow();
+                      if (code == 102 && openPubgAfterConnect) { openPubgAfterConnect = false; launchPubg(); }
+                  }
+              }
+
+              private void startVpnNow() {
+                  String d1 = dns1Input.getText().toString().trim();
+                  String d2 = dns2Input.getText().toString().trim();
+                  prefs.edit().putString("dns1", d1).putString("dns2", d2).apply();
+                  Intent i = new Intent(this, DnsVpnService.class);
+                  i.setAction(DnsVpnService.ACTION_START);
+                  i.putExtra("dns1", d1);
+                  i.putExtra("dns2", d2);
+                  startService(i);
+                  DnsVpnService.isRunning = true;
+                  refreshUi();
+              }
+
+              private void stopVpn() {
+                  Intent i = new Intent(this, DnsVpnService.class);
+                  i.setAction(DnsVpnService.ACTION_STOP);
+                  startService(i);
+                  DnsVpnService.isRunning = false;
+                  refreshUi();
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (resultCode == RESULT_OK) {
+                      startVpnNow();
+                      if (requestCode == 102 && openPubgAfterConnect) { openPubgAfterConnect = false; launchPubg(); }
+                  } else {
+                      openPubgAfterConnect = false;
+                  }
+              }
+
+              private void showSettings() {
+                  View v = LayoutInflater.from(this).inflate(R.layout.dialog_settings, null);
+                  AlertDialog dlg = new AlertDialog.Builder(this).setView(v).create();
+                  boolean fa = "fa".equals(prefs.getString("lang", "en"));
+
+                  TextView hdr = v.findViewById(R.id.settingsHeader);
+                  RadioButton rbEn = v.findViewById(R.id.langEn);
+                  RadioButton rbFa = v.findViewById(R.id.langFa);
+                  CheckBox cbStart = v.findViewById(R.id.autoConnectStartupCheck);
+                  CheckBox cbPubg = v.findViewById(R.id.autoConnectPubgCheck);
+                  Button btnReset = v.findViewById(R.id.resetDnsBtn);
+                  Button btnSave = v.findViewById(R.id.saveSettingsBtn);
+
+                  hdr.setText(fa ? "تنظیمات" : "SETTINGS");
+                  cbStart.setText(fa ? "اتصال خودکار موقع باز شدن" : "Auto connect on app open");
+                  cbPubg.setText(fa ? "اتصال خودکار قبل از پابجی" : "Auto connect before PUBG");
+                  btnReset.setText(fa ? "ریست DNS (87.107.206.16 / 15)" : "RESET DNS (87.107.206.16 / 15)");
+                  btnSave.setText(fa ? "ذخیره" : "SAVE SETTINGS");
+
+                  if (fa) rbFa.setChecked(true); else rbEn.setChecked(true);
+                  cbStart.setChecked(prefs.getBoolean("auto_startup", false));
+                  cbPubg.setChecked(prefs.getBoolean("auto_pubg", false));
+
+                  btnReset.setOnClickListener(x -> {
+                      dns1Input.setText("87.107.206.16");
+                      dns2Input.setText("87.107.206.15");
+                  });
+
+                  btnSave.setOnClickListener(x -> {
+                      prefs.edit()
+                          .putString("lang", rbFa.isChecked() ? "fa" : "en")
+                          .putBoolean("auto_startup", cbStart.isChecked())
+                          .putBoolean("auto_pubg", cbPubg.isChecked())
+                          .putString("dns1", dns1Input.getText().toString().trim())
+                          .putString("dns2", dns2Input.getText().toString().trim())
+                          .apply();
+                      refreshUi();
+                      dlg.dismiss();
+                  });
+
+                  dlg.show();
+              }
+
+              private void launchPubg() {
+                  String[] pkgs = {"com.tencent.ig", "com.pubg.krmobile", "com.vng.pubgmobile", "com.rekoo.pubgm"};
+                  for (String p : pkgs) {
+                      Intent l = getPackageManager().getLaunchIntentForPackage(p);
+                      if (l != null) { startActivity(l); return; }
+                  }
+                  Toast.makeText(this, "PUBG Mobile not found", Toast.LENGTH_SHORT).show();
+              }
+
+              private void refreshUi() {
+                  boolean fa = "fa".equals(prefs.getString("lang", "en"));
+                  titleText.setText("DNS CASES");
+                  pubgBtn.setText(fa ? "اجرای پابجی موبایل" : "OPEN PUBG MOBILE");
+                  settingsBtn.setText(fa ? "تنظیمات" : "SETTINGS");
+                  if (DnsVpnService.isRunning) {
+                      statusText.setText(fa ? "وضعیت: متصل" : "Status: Connected");
+                      toggleBtn.setText(fa ? "قطع اتصال" : "DISCONNECT");
+                  } else {
+                      statusText.setText(fa ? "وضعیت: قطع" : "Status: Disconnected");
+                      toggleBtn.setText(fa ? "اتصال DNS VPN" : "CONNECT DNS VPN");
+                  }
+              }
+          }
+          EOF
 
       - name: Build APK
         run: gradle assembleDebug --no-daemon
@@ -41,4 +334,3 @@ jobs:
         with:
           name: dns-cases-apk
           path: app/build/outputs/apk/debug/app-debug.apk
-          
