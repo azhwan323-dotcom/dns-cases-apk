@@ -24,16 +24,13 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Install Capacitor & initialize Android if needed
+      - name: Clean old native files & init Capacitor from www
         run: |
+          rm -rf android capacitor.config.json capacitor.config.ts package.json package-lock.json
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          if [ ! -f capacitor.config.json ] && [ ! -f capacitor.config.ts ]; then
-            npx cap init "DNS CASES PRO" "com.dnscases.pro" --web-dir=www
-          fi
-          if [ ! -d android ]; then
-            npx cap add android
-          fi
+          npx cap init "DNS CASES PRO" "com.dnscases.pro" --web-dir=www
+          npx cap add android
           npx cap copy android
           npx cap sync android
 
