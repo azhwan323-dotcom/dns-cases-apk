@@ -1,128 +1,21 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DNS CASES PRO</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DNS CASES TEST</title>
+</head>
+<body style="margin:0;padding:20px;background:#090d16;color:#fff;font-family:sans-serif;">
+  <div style="background:linear-gradient(135deg,#2563eb,#9333ea);padding:20px;border-radius:16px;margin-bottom:16px;">
+    <h1 style="margin:0 0 8px 0;font-size:20px;">DNS CASES PRO - TEST</h1>
+    <p style="margin:0;font-size:13px;">اگر این متن و کادر رنگی را می‌بینی، یعنی بیلد و نمایش صفحه درست کار می‌کند.</p>
+  </div>
 
-        body {
-            background-color: #070b14;
-            background-image: linear-gradient(180deg, #0c192e 0%, #070b14 55%, #110d24 100%);
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 14px 14px 48px;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            background: rgba(17, 25, 43, 0.92);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            border-radius: 16px;
-            padding: 10px 12px;
-        }
-
-        .title-wrap h1 {
-            font-size: 16px;
-            font-weight: 800;
-            color: #38bdf8;
-        }
-
-        .title-wrap p {
-            font-size: 11px;
-            color: #cbd5e1;
-            margin-top: 2px;
-        }
-
-        .status-chip {
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-            background: rgba(244, 63, 94, 0.2);
-            color: #fb7185;
-            border: 1px solid rgba(251, 113, 133, 0.4);
-        }
-
-        .status-chip.active {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border-color: rgba(52, 211, 153, 0.4);
-        }
-
-        .pic-card {
-            background: linear-gradient(135deg, #1d4ed8 0%, #7e22ce 55%, #0f766e 100%);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-        }
-
-        .pic-text h2 {
-            font-size: 14px;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
-
-        .pic-text p {
-            font-size: 11px;
-            color: #e2e8f0;
-            line-height: 1.5;
-        }
-
-        .pic-graphic {
-            width: 88px;
-            height: 68px;
-            border-radius: 12px;
-            background: rgba(7, 11, 20, 0.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .power-area {
-            text-align: center;
-            margin: 12px 0 16px;
-        }
-
-        .power-btn {
-            width: 104px;
-            height: 104px;
-            border-radius: 50%;
-            border: 3px solid #38bdf8;
-            background: #111c33;
-            color: #38bdf8;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 0 24px rgba(56, 189, 248, 0.25);
-        }
-
-        .power-btn.active {
-            background: #10b981;
-            border-color: #a7f3d0;
-            color: #062016;
-            box-shadow: 0 0 28px rgba(16, 185, 129, 0.45);
-        }
-
-        .timer-txt {
-            margin-top: 8px;
-            font-family: monospace;
-            font-size: 14px;
+  <div style="background:#131b2e;padding:14px;border-radius:14px;">
+    <div style="margin-bottom:8px;font-size:13px;">DNS اولیه (بالایی):</div>
+    <input id="d1" value="87.107.206.16" style="width:100%;padding:10px;border-radius:8px;border:none;font-size:15px;margin-bottom:10px;" />
+    <div style="margin-bottom:8px;font-size:13px;">DNS ثانویه (پایینی):</div>
+    <input id="d2" value="87.107.206.15" style="width:100%;padding:10px;border-radius:8px;border:none;font-size:15px;" />
+  </div>
+</body>
+</html>
