@@ -466,12 +466,47 @@
       drawList();
     }
 
+    function checkRealNet() {
+      var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      var timeoutId = controller ? setTimeout(function () { controller.abort(); }, 3500) : null;
+      return fetch("https://www.google.com/generate_204", {
+        mode: "no-cors",
+        cache: "no-store",
+        signal: controller ? controller.signal : undefined
+      }).then(function () {
+        if (timeoutId) clearTimeout(timeoutId);
+        return true;
+      }).catch(function () {
+        if (timeoutId) clearTimeout(timeoutId);
+        return navigator.onLine === true;
+      });
+    }
+
     function toggleConn() {
-      connected = !connected;
-      var badge = document.getElementById("stBadge");
-      var btn = document.getElementById("connBtn");
       if (connected) {
-        badge.textContent = "فعال";
+        connected = false;
+        var badge = document.getElementById("stBadge");
+        var btn = document.getElementById("connBtn");
+        badge.textContent = "قطع";
+        badge.classList.remove("on");
+        btn.textContent = "اتصال و کپی خودکار DNS";
+        btn.classList.remove("on");
+        clearInterval(loopId);
+        document.getElementById("timer").textContent = "00:00:00";
+        showMsg("اتصال قطع شد");
+        return;
+      }
+
+      showMsg("در حال بررسی اتصال شبکه...");
+      checkRealNet().then(function (online) {
+        if (!online) {
+          showMsg("دسترسی به شبکه برقرار نیست");
+          return;
+        }
+        connected = true;
+        var badge = document.getElementById("stBadge");
+        var btn = document.getElementById("connBtn");
+        badge.textContent = "متصل";
         badge.classList.add("on");
         btn.textContent = "قطع اتصال";
         btn.classList.add("on");
@@ -485,16 +520,8 @@
           document.getElementById("timer").textContent = h + ":" + m + ":" + s;
         }, 1000);
         copyBox("dns1");
-        showMsg("پروفایل فعال شد و DNS اولیه کپی شد");
-      } else {
-        badge.textContent = "قطع";
-        badge.classList.remove("on");
-        btn.textContent = "اتصال و کپی خودکار DNS";
-        btn.classList.remove("on");
-        clearInterval(loopId);
-        document.getElementById("timer").textContent = "00:00:00";
-        showMsg("اتصال قطع شد");
-      }
+        showMsg("اتصال شبکه تایید شد و DNS کپی شد");
+      });
     }
 
     function pingAll(autoPick) {
